@@ -32,6 +32,7 @@ class ProductsController extends AbstractController
         //filter the deserialized data
         $modifiedEnquiry = $promotionsFilter->apply($lowestPriceEnquiry);
 
+
         //serialize the DTO into json Format
         $responseContent = $serializer->serialize($modifiedEnquiry, 'json');
 
