@@ -20,7 +20,7 @@ class ProductPromotion
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?promotion $Promotion = null;
+    private ?Promotion $promotion = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $validTo = null;
@@ -42,14 +42,14 @@ class ProductPromotion
         return $this;
     }
 
-    public function getPromotion(): ?promotion
+    public function getPromotion(): ?Promotion
     {
-        return $this->Promotion;
+        return $this->promotion;
     }
 
-    public function setPromotion(?promotion $Promotion): self
+    public function setPromotion(?Promotion $promotion): self
     {
-        $this->Promotion = $Promotion;
+        $this->promotion = $promotion;
 
         return $this;
     }
