@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\DTO\LowestPriceEnquiry;
 use App\Filter\PromotionsFilterInterface;
+use App\Repository\ProductRepository;
 use App\Service\Serializer\DTOSerializer;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,11 +14,17 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ProductsController extends AbstractController
 {
+    public function __construct(private ProductRepository $repository)
+    {
+
+    }
+
     #[Route('/products/{id}/lowest-price', name: 'lowest-price', methods:'POST')]
     public function lowestPrice(Request $request,
                                 int $id,
-                                PromotionsFilterInterface $promotionsFilter,
-                                DTOSerializer $serializer):Response
+                                DTOSerializer $serializer,
+                                PromotionsFilterInterface $promotionsFilter
+    ):Response
     {
         if($request->headers->has('force_fail')){
             return new JsonResponse(
@@ -27,10 +34,14 @@ class ProductsController extends AbstractController
         }
 
         //deserialize the request content into a DTO
-        $lowestPriceEnquiry = $serializer->deserialize($request->getContent(), LowestPriceEnquiry::class, 'json');
+        //$lowestPriceEnquiry = $serializer->deserialize($request->getContent(), LowestPriceEnquiry::class, 'json');
 
         //filter the deserialized data
-        $modifiedEnquiry = $promotionsFilter->apply($lowestPriceEnquiry);
+        $product = $this->repository->find($id); //remember to add error handling
+        dd($product);
+
+
+        $modifiedEnquiry = $promotionsFilter->apply($lowestPriceEnquiry, $promotions);
 
 
         //serialize the DTO into json Format
