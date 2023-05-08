@@ -10,4 +10,11 @@ class ServiceTestCase extends WebTestCase
 {
     protected ContainerInterface $container;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->container = static::createClient()->getContainer();
+
+    }
+
 }
