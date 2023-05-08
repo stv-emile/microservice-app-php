@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 
 class ProductsController extends AbstractController
@@ -26,7 +28,8 @@ class ProductsController extends AbstractController
     public function lowestPrice(Request $request,
                                 int $id,
                                 DTOSerializer $serializer,
-                                PromotionsFilterInterface $promotionsFilter
+                                PromotionsFilterInterface $promotionsFilter,
+                                CacheInterface $cache
     ):Response
     {
         if($request->headers->has('force_fail')){
@@ -36,26 +39,27 @@ class ProductsController extends AbstractController
             );
         }
 
-        //1-deserialize the request content into a DTO
+
         $lowestPriceEnquiry = $serializer->deserialize($request->getContent(), LowestPriceEnquiry::class, 'json');
 
-        //2-filter the deserialized data
-
-        //get the product form id
         $product = $this->repository->find($id); //remember to add error handling
 
-        //add product to DTO object
         $lowestPriceEnquiry->setProduct($product);
 
-        //get the promotions for the product that are valid for the request date
-        $promotions = $this->entityManager->getRepository(Promotion::class)->findValidForProduct(
-            $product,
-            date_create_immutable($lowestPriceEnquiry->getRequestDate())
-        );// must handle null value for promotions
+        $promotions = $cache->get("find-valid-por-product", function(ItemInterface $item)
+        use ($product, $lowestPriceEnquiry){
+
+            var_dump('miss');
+
+            return $this->entityManager->getRepository(Promotion::class)->findValidForProduct(
+                $product,
+                date_create_immutable($lowestPriceEnquiry->getRequestDate())
+            );// must handle null value for promotions
+        });
+
 
         $modifiedEnquiry = $promotionsFilter->apply($lowestPriceEnquiry, ...$promotions);
 
-        //3-serialize the DTO into json Format
         $responseContent = $serializer->serialize($modifiedEnquiry, 'json');
 
         return new Response($responseContent, Response::HTTP_OK, ['Content-Type'=>'application/json']);
