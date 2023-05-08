@@ -25,8 +25,8 @@ class PromotionRepository extends ServiceEntityRepository
     public function findValidForProduct(Product $product, \DateTimeImmutable $requestDate){
         return $this->createQueryBuilder('p')
             ->innerJoin('p.productPromotions', 'pp')
-            ->andWhere('pp.product = :product')
-            ->andWhere('pp.validTo > :requestDate OR pp.validTo IS NULL')
+            ->andWhere('pp.product = :product') //promotions for this product
+            ->andWhere('pp.validTo > :requestDate OR pp.validTo IS NULL') //that are still valid for the request date
             ->setParameter('product', $product)
             ->setParameter('requestDate', $requestDate)
             ->getQuery()

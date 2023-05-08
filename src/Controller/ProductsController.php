@@ -36,10 +36,10 @@ class ProductsController extends AbstractController
             );
         }
 
-        //deserialize the request content into a DTO
+        //1-deserialize the request content into a DTO
         $lowestPriceEnquiry = $serializer->deserialize($request->getContent(), LowestPriceEnquiry::class, 'json');
 
-        //filter the deserialized data
+        //2-filter the deserialized data
 
         //get the product form id
         $product = $this->repository->find($id); //remember to add error handling
@@ -47,15 +47,15 @@ class ProductsController extends AbstractController
         //add product to DTO object
         $lowestPriceEnquiry->setProduct($product);
 
-        //get the promotions for the product according to the date
+        //get the promotions for the product that are valid for the request date
         $promotions = $this->entityManager->getRepository(Promotion::class)->findValidForProduct(
             $product,
             date_create_immutable($lowestPriceEnquiry->getRequestDate())
-        );// null value error handling
+        );// must handle null value for promotions
 
         $modifiedEnquiry = $promotionsFilter->apply($lowestPriceEnquiry, ...$promotions);
 
-        //serialize the DTO into json Format
+        //3-serialize the DTO into json Format
         $responseContent = $serializer->serialize($modifiedEnquiry, 'json');
 
         return new Response($responseContent, Response::HTTP_OK, ['Content-Type'=>'application/json']);
