@@ -6,7 +6,7 @@ use App\DTO\PromotionEnquiryInterface;
 use App\Entity\Promotion;
 use App\Filter\Modifier\Factory\PriceModifierFactoryInterface;
 
-class LowestPriceFilter implements PromotionsFilterInterface
+class LowestPriceFilter implements PriceFilterInterface
 {
 
     public function __construct(private PriceModifierFactoryInterface $priceModifierFactory)
