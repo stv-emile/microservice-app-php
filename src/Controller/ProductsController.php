@@ -1,6 +1,7 @@
 <?php 
 namespace App\Controller;
 
+use App\Cache\PromotionCache;
 use App\DTO\LowestPriceEnquiry;
 use App\Entity\Promotion;
 use App\Filter\PromotionsFilterInterface;
@@ -29,7 +30,7 @@ class ProductsController extends AbstractController
                                 int $id,
                                 DTOSerializer $serializer,
                                 PromotionsFilterInterface $promotionsFilter,
-                                CacheInterface $cache
+                                PromotionCache $promotionCache
     ):Response
     {
         if($request->headers->has('force_fail')){
@@ -46,17 +47,7 @@ class ProductsController extends AbstractController
 
         $lowestPriceEnquiry->setProduct($product);
 
-        $promotions = $cache->get("find-valid-por-product", function(ItemInterface $item)
-        use ($product, $lowestPriceEnquiry){
-
-            var_dump('miss');
-
-            return $this->entityManager->getRepository(Promotion::class)->findValidForProduct(
-                $product,
-                date_create_immutable($lowestPriceEnquiry->getRequestDate())
-            );// must handle null value for promotions
-        });
-
+        $promotions = $promotionCache->findValidForProduct($product, $lowestPriceEnquiry->getRequestDate());
 
         $modifiedEnquiry = $promotionsFilter->apply($lowestPriceEnquiry, ...$promotions);
 
